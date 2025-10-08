@@ -1,0 +1,133 @@
+
+/// https://www.thecodedmessage.com/posts/default-params/
+///
+
+// use itertools::Itertools;
+
+gestion des options 
+/*
+    if let None = a.vec {
+        a.vec = Some(vec![]);
+    }
+
+    if let Some(ref mut v) = a.vec { // <- looks like we should know it's ok, no ?
+        v.push(1);
+    }
+*/
+
+ let out_point = match out_point {
+                Some(point) => point.clone(),
+                None => return None,
+            };
+
+            // use colog;
+// use log::{error, info, warn};
+// use memoize::memoize;
+
+    /// 
+    /// ```rust
+    /// toto
+    /// fn main()
+    /// 
+    /// titi
+    /// ```
+    /// 
+    /// 
+    /// 
+    dbg!()
+
+Dans la doc
+
+# Panics
+# Errors 
+# Safety
+
+
+
+    {
+    "spacename": "cube",
+    "dimension": 4,
+    "solids": 
+    [
+        {
+            "solidname": "cube",
+            "pos": "0",
+            "dimension": 4,
+            "color": "#aF099F",
+            "faces": [
+                {
+                    "face": [
+                        1,
+                        0,
+                        0,
+                        0,
+                        0.7
+                    ]
+                },
+                {
+                    "face": [
+                        -1,
+                        0,
+                        0,
+                        0,
+                        0.7
+                    ]
+                },
+                {
+                    "face": [
+                        0,
+                        1,
+                        0,
+                        0,
+                        0.7
+                    ]
+                },
+                {
+                    "face": [
+                        0,
+                        -1,
+                        0,
+                        0,
+                        0.7
+                    ]
+                },
+                {
+                    "face": [
+                        0,
+                        0,
+                        1,
+                        0,
+                        0.7
+                    ]
+                },
+                {
+                    "face": [
+                        0,
+                        0,
+                        -1,
+                        0,
+                        0.7
+                    ]
+                },
+                {
+                    "face": [
+                        0,
+                        0,
+                        0,
+                        1,
+                        0.7
+                    ]
+                },
+                {
+                    "face": [
+                        0,
+                        0,
+                        0,
+                        -1,
+                        0.7
+                    ]
+                }
+            ]
+        }
+    ]
+}
