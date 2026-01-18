@@ -1,6 +1,6 @@
-/target
-/oldjs
-/doc
+target/
+oldjs/
+doc/
 Cargo.lock
-/.vscode
+.vscode/
 
