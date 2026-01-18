@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::bases::{
-    among_index, hyperplanes_intersect, vector_flip, Axis, JsonFormat, Point, ProjecType,
+    among_index, hyperplanes_intersect, vector_flip, vector_subtract, Axis, JsonFormat, Point, ProjecType,
     MAX_FACE_PER_CORNER, VERY_SMALL_NUM,
 };
 use super::face::{Face, JsonFace};
@@ -125,6 +125,17 @@ impl Solid {
             Err(_e) => Solid::new(),
         }
     }
+    pub fn new_from_halfspaces(dimension:usize, halfspaces:Vec<Vec<f64>>) -> Self {
+        let mut solid = Solid::new();
+        solid.dimension = dimension;
+        for halfspace in halfspaces {
+            let face  = Face::new_from_halfspace(&halfspace);
+            solid.suffix_face(&face);
+             
+        }
+        solid
+    }
+
 
     pub fn export_to_json(&self, format: JsonFormat) -> String {
         let res: String;
@@ -608,6 +619,25 @@ impl Solid {
         }
     }
 
+    pub fn fact_size_brut(&mut self, factor: f64) {
+        for face in self.faces.iter_mut() {
+            face.fact_size(factor);
+        };
+        self.force_refresh();
+
+    }
+    pub fn fact_size(&mut self, factor: f64) {
+        let center = self.center.to_vec();
+        self.fact_size_brut(factor);
+        let ncenter = self.center.to_vec();
+        let dec = vector_subtract(&center, &ncenter);
+        self.translate(&dec);
+      // self.force_refresh();
+    } 
+
+
+
+
     
 }
 
@@ -698,6 +728,7 @@ impl NdSolid for Solid {
         }
         self.center = middle;
     }
+    
 }
 
 
@@ -901,4 +932,46 @@ mod tests_solid {
 
         */
     }
+}
+
+///
+/// return 3D cube
+///
+pub fn d3_cube (min: f64, max: f64) -> Solid {
+  return Solid::new_from_halfspaces(3, vec![
+    vec![-1.0, 0.0, 0.0, max],
+    vec![1.0, 0.0, 0.0, -min],
+    vec![0.0, -1.0, 0.0, max],
+    vec![0.0, 1.0, 0.0, -min],
+    vec![0.0, 0.0, -1.0, max],
+    vec![0.0, 0.0, 1.0, -min]
+  ])
+}
+
+///
+/// return a 4D cube
+///
+pub fn d4_cube (min: f64, max: f64) -> Solid{
+  return Solid::new_from_halfspaces(4, vec![
+    vec![-1.0, 0.0, 0.0, 0.0, max],
+    vec![1.0, 0.0, 0.0, 0.0, -min],
+    vec![0.0, -1.0, 0.0, 0.0, max],
+    vec![0.0, 1.0, 0.0, 0.0, -min],
+    vec![0.0, 0.0, -1.0, 0.0, max],
+    vec![0.0, 0.0, 1.0, 0.0, -min],
+    vec![0.0, 0.0, 0.0, -1.0, max],
+    vec![0.0, 0.0, 0.0, 1.0, -min]
+  ])
+}
+
+
+mod tests_xd_solid {
+    use super::*;
+    // use approx::assert_abs_diff_eq;
+    #[test]
+    pub fn d3_solid_validation() { }
+
+    #[test]
+    pub fn d4_solid_validation() { }
+    
 }

@@ -6,6 +6,7 @@
 use serde::{Deserialize, Serialize};
 use tree_ds::prelude::*;
 use serde_json;
+use memoize::memoize;
 
 // use super::*;
 
@@ -14,6 +15,7 @@ use super::solid::{Solid, NdSolid, ComputeMode};
 use uuid::Uuid;
 
 use std::collections::HashMap;
+use std::f64::consts::PI;
 
 /**
  * @file Describes ADSODA space
@@ -134,6 +136,10 @@ impl Space {
             Err(_e) => Space::new(0, "err".to_string()),
         }
     }
+
+    pub fn name(&self) -> String {
+      self.spacename.to_string()
+    }
     /*
         pub fn import_from_json (json) {
         const space = new Space(parseInt(json.dimension), json.spacename)
@@ -173,6 +179,43 @@ impl Space {
         // TODO: vider la structure
         
     }
+
+
+    /*
+    
+    
+     /**
+   * @todo write
+   */
+  deleteSelectedSolids () {
+    this.solids.forEach((solid, key) => {
+      if (solid.selected) {
+        this.solids.delete(key)
+      }
+    })
+    // TODO: retirer du group
+  }
+
+  /**
+   * @todo write
+   */
+  duplicateSolids () {
+    const _t = this
+    this.solids.forEach(solid => {
+      if (solid.selected) {
+        const sol = solid.clone()
+        _t.suffixSolid(sol)
+      }
+    })
+  }
+
+  /**
+   * TODO: pour l'instant, on fait simple
+   */
+  ungroupSolids () {
+    this.clearGroups()
+  }
+     */
 
     ///
     pub fn compute_solids(&mut self) {
@@ -364,3 +407,95 @@ mod tests_solid {
     pub fn solid_validation() {
     }
   }
+
+  /*
+fn multiply_matrices (a, b) {
+  const aNumRows = a.length; const aNumCols = a[0].length
+  const bNumCols = b[0].length
+  const m = new Array(aNumRows) // initialize array of rows
+  for (let r = 0; r < aNumRows; ++r) {
+    m[r] = new Array(bNumCols) // initialize the current row
+    for (let c = 0; c < bNumCols; ++c) {
+      m[r][c] = 0 // initialize the current cell
+      for (let i = 0; i < aNumCols; ++i) {
+        m[r][c] += a[r][i] * b[i][c]
+      }
+    }
+  }
+  return m
+}
+
+*/
+
+
+fn coord_cos_sin (angle: f64) -> (f64, f64) {
+  let a = (angle * PI) / 180.0;
+  (a.cos(), a.sin())
+}
+
+fn d4_rot_xy (angle: f64) -> Vec<Vec<f64>> {
+  let (c,s) = coord_cos_sin(angle);
+  let rot = vec![
+    vec![1.0, 0.0, 0.0, 0.0],
+    vec![0.0, 1.0, 0.0, 0.0],
+    vec![0.0, 0.0, c, -s],
+    vec![0.0, 0.0, s, c]
+  ];
+  return rot
+}
+
+fn d4_rot_xz (angle: f64) -> Vec<Vec<f64>> {
+  let (c,s) = coord_cos_sin(angle);
+  let rot = vec![
+    vec![1.0, 0.0, 0.0, 0.0],
+    vec![0.0, c, 0.0, -s],
+    vec![0.0, 0.0, 1.0, 0.0],
+    vec![0.0, s, 0.0, c]
+  ];
+  return rot
+}
+
+fn d4_rot_xw (angle: f64)  -> Vec<Vec<f64>> {
+  let (c,s) = coord_cos_sin(angle);
+  let rot = vec![
+    vec![1.0, 0.0, 0.0, 0.0],
+    vec![0.0, c, -s, 0.0],
+    vec![0.0, s, c, 0.0],
+    vec![0.0, 0.0, 0.0, 1.0]
+  ];
+
+  return rot
+}
+
+fn d4_rot_yz (angle: f64)  -> Vec<Vec<f64>> {
+  let (c,s) = coord_cos_sin(angle);
+  let rot = vec![
+    vec![c, 0.0, 0.0, -s],
+    vec![0.0, 1.0, 0.0, 0.0],
+    vec![0.0, 0.0, 1.0, 0.0],
+    vec![s, 0.0, 0.0, c]
+  ];
+  return rot
+}
+
+fn d4_rot_yw(angle: f64)  -> Vec<Vec<f64>> {
+  let (c,s) = coord_cos_sin(angle);
+  let rot = vec![
+    vec![c, 0.0, -s, 0.0],
+    vec![0.0, 1.0, 0.0, 0.0],
+    vec![s, 0.0, c, 0.0],
+    vec![0.0, 0.0, 0.0, 1.0]
+  ];
+  return rot
+}
+
+fn d4_rot_zw(angle: f64) -> Vec<Vec<f64>> {
+  let (c,s) = coord_cos_sin(angle);
+  let rot = vec![
+    vec![c, -s, 0.0, 0.0],
+    vec![s, c, 0.0, 0.0],
+    vec![0.0, 0.0, 1.0, 0.0],
+    vec![0.0, 0.0, 0.0, 1.0]
+  ];
+  return rot
+}

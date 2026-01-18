@@ -231,6 +231,8 @@ impl Face {
     }
 
     /// il faudra que l'on remplace axe par un vecteur directeur
+    /// back signifie que c'est plutot une face arrière quand on la regarde de l'axe
+    /// c'est a dire que -infini est dans le demi plan
     fn orientation(&self, axis: &Axis) -> Orientation {
         let val = self.halfspace.get_coordinate(axis);
         if val < -VERY_SMALL_NUM {
@@ -493,7 +495,7 @@ impl Face {
     /// il n'est possible d'ordonner les coins que si ce n'est pas un none.
     // TODO: retourner None ?
     // TODO: reprendre, voir s'il y a vraiment besoin de cloner
-    pub fn ordered_corners(&self) -> Vec<Point> {
+    pub fn d3_ordered_corners(&self) -> Vec<Point> {
         // if let None = self.touching_corners {        return Vec::<Point>::new();        }
         // si touching_corners est bien un some
         // if let Some(ref v) = self.touching_corners {
@@ -520,7 +522,7 @@ impl Face {
             .into_iter()
             .map(|corner| {
                 (
-                    order_3d(&[corner.0[0], corner.0[1], corner.0[2]], &vequ, &ci, &vref),
+                    d3_order(&[corner.0[0], corner.0[1], corner.0[2]], &vequ, &ci, &vref),
                     corner,
                 )
             })
@@ -531,6 +533,11 @@ impl Face {
         return ordered.into_iter().map(|el| el.1).collect();
         // } else {            return Vec::<Point>::new();        }
     }
+
+    pub fn fact_size (&mut self,factor: f64) {
+        self.halfspace.fact(factor);
+  }
+
 }
 
 impl Point {
@@ -552,7 +559,7 @@ pub fn faces_intersection(faces: &Vec<Face>) -> Option<Vec<f64>> {
 /// spécifique 3D
 /// expliquer fonctionnement
 /// TODO: utiliser les objets points
-fn order_3d(
+fn d3_order(
     point1: &[f64; 3],
     halfspace: &[f64; 3],
     pointref: &[f64; 3],
@@ -687,3 +694,4 @@ mod tests_face {
         assert_eq!(p0.is_inside_faces(&vec![face5, face6]), false);
     }
 }
+

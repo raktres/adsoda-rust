@@ -116,7 +116,6 @@ impl Point {
     pub fn is_inside_or_on_halfspaces(&self, eqs: &Vec<Vec<f64>>) -> bool {
         eqs.iter()
             .all(|equ| self.halfspace_position(&equ) > -VERY_SMALL_NUM)
-        /*        self.faces            .iter()            .all(|face| face.is_point_inside_or_on_face(point)) */
     }
 }
 
@@ -271,6 +270,15 @@ impl Halfspace {
             *coord *= -1.0;
         }
     }
+    pub fn fact(&mut self, factor: f64) {
+        if let Some(last_index) = self.0.len().checked_sub(1) {
+            for i in 0..last_index {
+                self.0[i] *= factor;
+            }
+        }
+    }
+
+
     /// récupère un coefficient
     ///
     /// normalement il faudrait vérifier que l'on ne récupère pas le dernier car c'est la position du plan et non sa direction
@@ -321,8 +329,6 @@ impl Halfspace {
         let last = self.dimension();
         let mut hsvect = self.to_vec();
         hsvect.remove(last);
-        // attention, dans cette implémentation, la constante est vue comme à droite, il faut
-        // l'envisager comme l'opposé de ce à quoi on pense !!!
         hsvect.push(self.0[last] - vector_dot(&hsvect, &vector));
         self.0 = vector_normalize(&hsvect);
         // self.0[last] -= vector_dot(&hsvect, &vector);
@@ -366,7 +372,8 @@ impl Halfspace {
         );
         */
 
-        let intercept = -self.get_constant() / self.get_coordinate(&Axis(coordindex));
+            // ???? -self ?
+        let intercept = self.get_constant() / self.get_coordinate(&Axis(coordindex));
 
         //  At this point we have found a point on the halfspace.  This point is
         //  (0, 0, ..., intercept, ..., 0, 0), where intercept is the ith coordinate
@@ -382,7 +389,8 @@ impl Halfspace {
         for i in 0..coords.len() {
             sum += matrix[i][coordindex] * intercept * coords[i]
         }
-        coords.push(-sum);
+        // ???? -sum ???
+        coords.push(sum);
         self.0 = vector_normalize(&coords);
     }
 }
@@ -432,7 +440,8 @@ pub fn halfspaces_findnormal(points_array: &Vec<Vec<f64>>) -> Option<Vec<f64>> {
 
     let res: Vec<f64> = ech.iter().map(|row| row[row.len() - 1]).collect();
     let mut normal = res.clone();
-    normal.push(-vector_dot(&res, &points_array[0]));
+    // ???? -vector ???
+    normal.push(vector_dot(&res, &points_array[0]));
 
     Some(normal)
 }
@@ -901,6 +910,117 @@ fn matrix_solution(matrix: &Vec<Vec<f64>>) -> Option<Vec<f64>> {
     Some(last)
 }
 
+fn multiply_matrices(a: &[Vec<f64>], b: &[Vec<f64>]) -> Vec<Vec<f64>> {
+    let n = a.len();
+    let mut result = vec![vec![0.0; n]; n];
+
+    for i in 0..n {
+        for j in 0..n {
+            for k in 0..n {
+                result[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_multiply_matrices_normal_case() {
+        let a = vec![
+            vec![1.0, 2.0],
+            vec![3.0, 4.0],
+        ];
+        let b = vec![
+            vec![5.0, 6.0],
+            vec![7.0, 8.0],
+        ];
+        let expected = vec![
+            vec![19.0, 22.0],
+            vec![43.0, 50.0],
+        ];
+        assert_eq!(multiply_matrices(&a, &b), expected);
+    }
+
+    #[test]
+    fn test_multiply_matrices_identity() {
+        let a = vec![
+            vec![1.0, 0.0],
+            vec![0.0, 1.0],
+        ];
+        let b = vec![
+            vec![5.0, 6.0],
+            vec![7.0, 8.0],
+        ];
+        assert_eq!(multiply_matrices(&a, &b), b);
+    }
+
+    #[test]
+    fn test_multiply_matrices_zero() {
+        let a = vec![
+            vec![0.0, 0.0],
+            vec![0.0, 0.0],
+        ];
+        let b = vec![
+            vec![5.0, 6.0],
+            vec![7.0, 8.0],
+        ];
+        let expected = vec![
+            vec![0.0, 0.0],
+            vec![0.0, 0.0],
+        ];
+        assert_eq!(multiply_matrices(&a, &b), expected);
+    }
+
+    #[test]
+    fn test_multiply_matrices_large_values() {
+        let a = vec![
+            vec![1e6, 2e6],
+            vec![3e6, 4e6],
+        ];
+        let b = vec![
+            vec![5e6, 6e6],
+            vec![7e6, 8e6],
+        ];
+        let expected = vec![
+            vec![19e12, 22e12],
+            vec![43e12, 50e12],
+        ];
+        assert_eq!(multiply_matrices(&a, &b), expected);
+    }
+
+    #[test]
+    fn test_multiply_matrices_1x1() {
+        let a = vec![vec![2.0]];
+        let b = vec![vec![3.0]];
+        let expected = vec![vec![6.0]];
+        assert_eq!(multiply_matrices(&a, &b), expected);
+    }
+
+    #[test]
+    fn test_multiply_matrices_3x3() {
+        let a = vec![
+            vec![1.0, 2.0, 3.0],
+            vec![4.0, 5.0, 6.0],
+            vec![7.0, 8.0, 9.0],
+        ];
+        let b = vec![
+            vec![9.0, 8.0, 7.0],
+            vec![6.0, 5.0, 4.0],
+            vec![3.0, 2.0, 1.0],
+        ];
+        let expected = vec![
+            vec![30.0, 24.0, 18.0],
+            vec![84.0, 69.0, 54.0],
+            vec![138.0, 114.0, 90.0],
+        ];
+        assert_eq!(multiply_matrices(&a, &b), expected);
+    }
+}
 // ============================================================================
 //
 // Tests
@@ -1137,5 +1257,13 @@ mod tests_matrix {
 
         assert_eq!(hs1.is_equal(&hs2, 0.1), true);
         assert_eq!(hs1.is_equal(&hs2, 0.001), false);
+
+
+        let mut halfspace7: Halfspace = Halfspace(vec![1.0, 2.0, 3.0, 4.0]);
+        let halfspace8= Halfspace(vec![2.0, 4.0, 6.0, 4.0]);
+        halfspace7.fact(2.0);
+        assert_eq!(halfspace7.is_equal(&halfspace8, 0.1), true);
+
+
     }
 }
